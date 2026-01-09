@@ -166,3 +166,85 @@ Example request body:
 **Notes / Implementation details:**
 - Endpoint is mounted under `/users` in the app, so route is `/users/login`.
 - On successful login the server includes a JWT; the password is never returned in responses.
+
+---
+
+GET /users/profile
+
+**Description:**
+- Return the currently authenticated user's profile. Requires a valid JWT (sent either as a cookie named `token` or in the `Authorization: Bearer <token>` header).
+
+**HTTP Method:** GET
+**Path:** /users/profile
+
+**Request headers:**
+- `Authorization: Bearer <jwt-token>` OR cookie `token=<jwt-token>`
+
+**Responses:**
+
+- 200 OK
+  - Returned when the token is valid and the user is found.
+  - Response body example:
+
+```json
+{
+  "_id": "<user-id>",
+  "fullname": {
+    "firstname": "Ashu",
+    "lastname": "Kumar"
+  },
+  "email": "ashu@example.com",
+  "socketId": null
+}
+```
+
+- 401 Unauthorized
+  - Returned when no token is provided, the token is invalid, or the token is blacklisted.
+  - Response body example:
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+- 500 Internal Server Error
+  - Returned when an unexpected server/database error occurs.
+
+**Notes / Implementation details:**
+- This route is protected by the authentication middleware which checks for a blacklisted token and verifies the JWT.
+
+---
+
+GET /users/logout
+
+**Description:**
+- Log out the currently authenticated user by clearing the `token` cookie and adding the token to a blacklist so it cannot be reused.
+
+**HTTP Method:** GET
+**Path:** /users/logout
+
+**Request headers:**
+- `Authorization: Bearer <jwt-token>` OR cookie `token=<jwt-token>`
+
+**Responses:**
+
+- 200 OK
+  - Returned when logout succeeds and the token is blacklisted.
+  - Response body example:
+
+```json
+{
+  "message": "logged out "
+}
+```
+
+- 401 Unauthorized
+  - Returned when no token is provided or the token is already invalid/blacklisted.
+
+- 500 Internal Server Error
+  - Returned when an unexpected server/database error occurs.
+
+**Notes / Implementation details:**
+- The logout endpoint clears the cookie named `token` and records the token in a `blacklistToken` collection so subsequent requests using the same token are rejected.
+
