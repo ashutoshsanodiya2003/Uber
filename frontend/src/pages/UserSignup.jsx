@@ -1,37 +1,53 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from 'axios'
+import {UserDataContext} from '../context/UserContext'
 
 const UserSignup = () => {
-const [email, setEmail] = useState('')
-const [password, setPassword] = useState('')
-const [firstName, setFirstName] = useState('')
-const [lastName, setLastName] = useState('')
-const [userData, setUserData] = useState({})
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [firstname, setFirstName] = useState("");
+  const [lastname, setLastName] = useState("");
+  const [userData, setUserData] = useState({});
+
+  const navigate = useNavigate();
+
+  const { user, setUser } = React.useContext(UserDataContext);
 
 
+  const submitHandler = async(e) => {
+    e.preventDefault();
 
+    const newUser = {
+      fullname: {
+        firstname: firstname,
+        lastname: lastname,
+      },
+      email: email,
+      password: password,
+    };
+    console.log("newUser =>",newUser)
 
-const submitHandler = (e)=>{
-  e.preventDefault()
+    console.log(`${import.meta.env.VITE_BASE_URL}/users/register`)
 
-  setUserData({
-    fullName:{
-      firstName:firstName,
-      lastName:lastName
-    },
-    email:email,
-    password:password
-  })
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`,newUser,{withCredentials:true})
+    
+    console.log("response",response)
 
-  console.log(userData)
+    if(response.status === 201){
+      const data = response.data
+      setUser(data.user)
+      localStorage.setItem('token',data.token)
+      console.log("user registered");
+      
+      navigate('/login')
+    }
 
-  setEmail('')
-  setFirstName('')
-  setLastName('')
-  setPassword('')
-
-}
-
+    setEmail("");
+    setFirstName("");
+    setLastName("");
+    setPassword("");
+  };
 
   return (
     <div className="p-7 h-screen flex flex-col justify-between">
@@ -42,52 +58,42 @@ const submitHandler = (e)=>{
           alt="Uber Logo"
         />
         <form
-         
-onSubmit={(e)=>{
-  submitHandler(e)
-}}
-
+          onSubmit={(e) => {
+            submitHandler(e);
+          }}
         >
-
-
           <h3 className="text-lg font-medium mb-2">What's your name</h3>
           <div className=" flex gap-4 mb-4">
+            <input
+              className="bg-[#eeeeee] w-1/2  rounded px-4 py-2 border  text-lg placeholder:text-sm"
+              required
+              type="text"
+              placeholder="FirstName"
+              value={firstname}
+              onChange={(e) => {
+                setFirstName(e.target.value);
+              }}
+            />
 
-             <input
-            
-            className="bg-[#eeeeee] w-1/2  rounded px-4 py-2 border  text-lg placeholder:text-sm"
-            required
-            type="text"
-            placeholder="FirstName"
-            value={firstName}
-            onChange={(e)=>{
-              setFirstName(e.target.value)
-            }}
-          />
-
-           <input
-            
-            className="bg-[#eeeeee] w-1/2 rounded px-4 py-2 border  text-base placeholder:text-sm"
-            required
-            type="text"
-            placeholder="LastName"
-            value={lastName}
-            onChange={(e)=>{
-              setLastName(e.target.value)
-            }}
-          />
+            <input
+              className="bg-[#eeeeee] w-1/2 rounded px-4 py-2 border  text-base placeholder:text-sm"
+              required
+              type="text"
+              placeholder="LastName"
+              value={lastname}
+              onChange={(e) => {
+                setLastName(e.target.value);
+              }}
+            />
           </div>
-
 
           <h3 className="text-base font-medium mb-2">What's your email</h3>
 
           <input
             value={email}
-            onChange={(e)=>{
-             setEmail( e.target.value)
+            onChange={(e) => {
+              setEmail(e.target.value);
             }}
-
-
             className="bg-[#eeeeee] mb-5 rounded px-4 py-2 border w-full text-base placeholder:text-sm"
             required
             type="email"
@@ -95,12 +101,10 @@ onSubmit={(e)=>{
           />
           <h3 className="text-base font-medium mb-2">Enter Password</h3>
           <input
-            
-           value={password}
-           onChange={(e)=>{
-            setPassword(e.target.value)
-           }}
-
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
             className="bg-[#eeeeee] mb-5 rounded px-4 py-2 border w-full text-base placeholder:text-sm"
             required
             type="password"
@@ -120,10 +124,13 @@ onSubmit={(e)=>{
       </div>
 
       <div className="">
-        <p className='text-[13px] leading-tight'>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quia rerum quod doloribus perferendis aperiam libero repellat reprehenderit!</p>
+        <p className="text-[13px] leading-tight">
+          Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quia rerum
+          quod doloribus perferendis aperiam libero repellat reprehenderit!
+        </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default UserSignup
+export default UserSignup;
